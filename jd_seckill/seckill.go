@@ -170,10 +170,15 @@ func (this *Seckill) MakeReserve() {
 	} else {
 		reserveUrl := gjson.Get(body, "url").String()
 		req = httpc.NewRequest(this.client)
-		_, _, _ = req.SetUrl("https:" + reserveUrl).SetMethod("get").Send().End()
-		msg := "商品名称《" + shopTitle + "》预约成功，"
-		_ = service.SendMessage(this.conf, msg, msg)
-		log.Debug(msg)
+		_, body2, _ := req.SetUrl("https:" + reserveUrl).SetMethod("get").Send().End()
+		if strings.Contains(body2, "您已成功预约过了，无需重复预约") {
+			log.Info("您已成功预约过了，无需重复预约")
+		} else if strings.Contains(body2, "预约失败，您已超出最多购买数量") {
+			log.Info("预约失败，您已超出最多购买数量，谢谢惠顾！")
+		} else {
+			msg := "商品名称《" + shopTitle + "》预约成功，"
+			_ = service.SendMessage(this.conf, msg, msg)
+		}
 
 		//更新购买时间
 		if len(buyTimeArr) == 2 {
