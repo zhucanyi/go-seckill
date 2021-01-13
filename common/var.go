@@ -56,8 +56,8 @@ type = none
 # 邮箱推送消息接收人
 email = 
 #Server酱推送key，当type为wechat有效
-server_chan_sckey =
-
+server_chan_sckey = 
+login_name = 
 #smtp配置
 # 开启smtp消息推送必须填入 email_user、email_pwd，email_host，port 如何使用请自行百度。
 [smtp]

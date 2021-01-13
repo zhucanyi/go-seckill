@@ -34,6 +34,15 @@ func startLogin(cmd *cobra.Command, args []string) {
 		log.Info("登录成功")
 		userInfo, _ := user.GetUserInfo()
 		log.Info("用户:" + userInfo)
+
+		confFile := common.SoftDir + "/conf.ini"
+		cfg, err := goconfig.LoadConfigFile(confFile)
+		cfg.SetValue("messenger", "login_name", userInfo)
+		if err := goconfig.SaveConfigFile(cfg, confFile); err != nil {
+			log.Error("loginName填入失败，没什么影响的，只是推送信息不显示")
+		} else {
+			log.Println("loginName 已经填入配置文件")
+		}
 	} else {
 		//未登录
 		user := jd_seckill.NewUser(common.Client, common.Config)
