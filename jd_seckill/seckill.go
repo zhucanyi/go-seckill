@@ -388,7 +388,9 @@ func (this *Seckill) SubmitSeckillOrder() bool {
 		totalMoney := gjson.Get(body, "totalMoney").String()
 		payUrl := "https:" + gjson.Get(body, "pcUrl").String()
 		log.Println(fmt.Sprintf("抢购成功，订单号:%s, 总价:%s, 电脑端付款链接:%s", orderId, totalMoney, payUrl))
-		_ = service.SendMessage(this.conf, "京东秒杀通知", fmt.Sprintf("抢购成功，订单号:%s, 总价:%s, 电脑端付款链接:%s", orderId, totalMoney, payUrl))
+		_ = service.SendMessage(this.conf, "抢购成功 开始庆祝吧～", fmt.Sprintf("抢购成功，订单号:%s, 总价:%s, 电脑端付款链接:%s", orderId,
+			totalMoney,
+			payUrl))
 		return true
 	} else {
 		log.Error("抢购失败，返回信息:" + body)
