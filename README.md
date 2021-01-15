@@ -166,6 +166,22 @@ docker-compose up -d
 docker-compose logs -f
 ```
 
+打包命令：
+```
+1、Mac下编译Linux, Windows平台的64位可执行程序：
+
+　$ CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build test.go
+　$ CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build test.go
+
+2、Linux下编译Mac, Windows平台的64位可执行程序：
+ $ CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build test.go
+ $ CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build test.go
+
+3、Windows下编译Mac, Linux平台的64位可执行程序：
+ $ SET CGO_ENABLED=0SET GOOS=darwin3 SET GOARCH=amd64 go build test.go
+ $ SET CGO_ENABLED=0 SET GOOS=linux SET GOARCH=amd64 go build test.go
+```
+
 ## 感谢
 ##### 非常感谢原作者 https://github.com/zhou-xiaojun/jd_mask 提供的代码
 ##### 也非常感谢 https://github.com/wlwwu/jd_maotai 进行的优化
