@@ -20,9 +20,10 @@ import (
 )
 
 type Seckill struct {
-	client   *httpc.HttpClient
-	conf     *goconfig.ConfigFile
-	initInfo string
+	client     *httpc.HttpClient
+	conf       *goconfig.ConfigFile
+	initInfo   string
+	seckillUrl string
 }
 
 func NewSeckill(client *httpc.HttpClient, conf *goconfig.ConfigFile) *Seckill {
@@ -35,6 +36,14 @@ func (this *Seckill) SetInitInfo(initInfo string) {
 
 func (this *Seckill) GetInitInfo() string {
 	return this.initInfo
+}
+
+func (this *Seckill) SetSeckillUrl(seckillUrl string) {
+	this.seckillUrl = seckillUrl
+}
+
+func (this *Seckill) GetSeckillUrl() string {
+	return this.seckillUrl
 }
 
 func (this *Seckill) getUserAgent() string {
@@ -199,7 +208,7 @@ func (this *Seckill) MakeReserve() {
 	}
 }
 
-func (this *Seckill) getSeckillUrl() (string, error) {
+func (this *Seckill) GetSeckillUrlRequest() (string, error) {
 	skuId := this.conf.MustValue("config", "sku_id", "")
 	req := httpc.NewRequest(this.client)
 	req.SetHeader("User-Agent", this.getUserAgent())
@@ -214,28 +223,32 @@ func (this *Seckill) getSeckillUrl() (string, error) {
 			break
 		}
 		log.Error("抢购链接获取失败，稍后自动重试")
-		time.Sleep(300 * time.Millisecond)
+		time.Sleep(100 * time.Millisecond)
 	}
 	url = "https:" + url
 	//https://divide.jd.com/user_routing?skuId=8654289&sn=c3f4ececd8461f0e4d7267e96a91e0e0&from=pc
 	url = strings.ReplaceAll(url, "divide", "marathon")
 	//https://marathon.jd.com/captcha.html?skuId=8654289&sn=c3f4ececd8461f0e4d7267e96a91e0e0&from=pc
 	url = strings.ReplaceAll(url, "user_routing", "captcha.html")
+	this.SetSeckillUrl(url)
 	log.Println("抢购链接获取成功:" + url)
 	return url, nil
 }
 
 func (this *Seckill) RequestSeckillUrl() {
-	user := NewUser(this.client, this.conf)
-	userInfo, _ := user.GetUserInfo()
-	log.Info("用户:" + userInfo)
+	loginName := this.conf.MustValue("messenger", "login_name", "未填写登陆名称 ")
+	log.Info("用户:" + loginName)
 	shopTitle, err := this.SkuTitle()
 	if err != nil {
 		log.Error("获取商品信息失败")
 	} else {
 		log.Info("商品名称:" + shopTitle)
 	}
-	url, _ := this.getSeckillUrl()
+	url := this.GetSeckillUrl()
+	if url == "" {
+		url, _ = this.GetSeckillUrlRequest()
+	}
+
 	skuId := this.conf.MustValue("config", "sku_id", "")
 	log.Info("访问商品的抢购连接...")
 	client := httpc.NewHttpClient()
@@ -278,7 +291,7 @@ func (this *Seckill) SeckillInitInfo() (string, error) {
 	req.SetData("isModifyAddress", "false")
 	req.SetUrl("https://marathon.jd.com/seckillnew/orderService/pc/init.action").SetMethod("post")
 	//尝试获取三次
-	errorCount := 3
+	errorCount := 5
 	errorMsg := ""
 	for errorCount > 0 {
 		_, body, _ := req.Send().End()
