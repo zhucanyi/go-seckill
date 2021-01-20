@@ -17,6 +17,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"unicode/utf8"
 )
 
 type Seckill struct {
@@ -286,6 +287,7 @@ func (this *Seckill) SeckillInitInfo() (string, error) {
 			log.Warn("获取秒杀初始化信息成功,返回信息:" + body)
 			return body, nil
 		} else {
+			body = SubStrDecodeRuneInString(body, 40)
 			log.Error("获取秒杀初始化信息失败,返回信息:" + body)
 			errorMsg = body
 		}
@@ -293,6 +295,16 @@ func (this *Seckill) SeckillInitInfo() (string, error) {
 		time.Sleep(100 * time.Millisecond)
 	}
 	return "", errors.New(errorMsg)
+}
+
+func SubStrDecodeRuneInString(s string, length int) string {
+	var size, n int
+	for i := 0; i < length && n < len(s); i++ {
+		_, size = utf8.DecodeRuneInString(s[n:])
+		n += size
+	}
+
+	return s[:n]
 }
 
 func (this *Seckill) SubmitSeckillOrder() bool {
